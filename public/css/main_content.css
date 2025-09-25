@@ -1,0 +1,30 @@
+.nội-dung-chính {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    background: none;
+}
+
+.thanh-điều-hướng {
+    height: 40px;
+    display: flex;
+    background-color: white;
+    justify-content: space-between;
+    z-index: 1000;
+    /* shadow giống mapbox */
+    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.2);;
+}
+
+@media (max-width: 426px) {
+    .thanh-điều-hướng {
+
+        order: 1;
+        /* xuống dưới */
+    }
+
+    #bản-đồ {
+        order: 0;
+        /* lên trên */
+    }
+}

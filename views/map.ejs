@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Guides</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.js"></script>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.css" type="text/css" />
+  <link rel="stylesheet" href="css/map.css">
+
+  <style>
+    #bản-đồ {
+      height: 100vh;
+      width: 80%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="bản-đồ"></div>
+  <script src="js/map.js"></script>
+  <script type="module">
+    const res = await fetch("/api/mapbox-token");
+    const data = await res.json(); // vì backend res.json({ token: "abc123" });
+    let bản_đồ = new BảnĐồ('pk.eyJ1Ijoibmd1eWVudmlldDIweHgiLCJhIjoiY21mNTVlNXR2MDIydjJqcHBqZXN4OTNyaCJ9.K7goCVrep9OsVEacfuPqtQ',
+      'bản-đồ', // ID của phần tử chứa bản đồ
+      BảnĐồ.kiểu_bản_đồ_tiêu_chuẩn.mặc_định, // Kiểu bản đồ
+      [105.8342, 21.0278], // Tọa độ trung tâm (Hà Nội)
+      10 // Độ thu phóng
+    );
+    let bộ_vẽ = new MapboxDraw({
+      displayControlsDefault: true,
+      controls: {
+        point: true,
+        line_string: true,
+        polygon: true,
+        trash: true,
+        combine_features: false, // 🚫 tắt combine
+        uncombine_features: false // 🚫 tắt uncombine
+      }
+    });
+    bản_đồ.CàiHiểnThịBộVẽKhôngGianĐịaLý(bộ_vẽ, false);
+  </script>
+
+</body>
+
+</html>

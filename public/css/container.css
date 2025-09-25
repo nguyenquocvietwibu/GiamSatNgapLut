@@ -1,0 +1,10 @@
+.bộ-chứa {
+    padding: 0 30px;
+}
+
+@media (max-width: 426px) {
+    .bộ-chứa {
+        padding: 0 0;
+        font-size: 0.9rem;
+    }
+}

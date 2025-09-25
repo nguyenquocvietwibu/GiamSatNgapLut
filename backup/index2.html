@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>OSM SearchBox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS + JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; }
+    #map { width: 100%; height: 100%; }
+    #search-container {
+      position: absolute;
+      top: 10px; left: 50%; transform: translateX(-50%);
+      z-index: 1000;
+      background: white;
+      padding: 8px;
+      border-radius: 5px;
+      width: 320px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+    }
+    #search-box { flex: 1; padding: 6px; margin-bottom: 5px; }
+    #search-btn { padding: 6px; cursor: pointer; }
+    #results { margin-top: 5px; max-height: 200px; overflow-y: auto; }
+    .result-item { cursor: pointer; padding: 5px; border-bottom: 1px solid #eee; font-size: 14px; }
+    .result-item:hover { background: #f5f5f5; }
+    .loading { color: #666; font-style: italic; padding: 5px; }
+  </style>
+</head>
+<body>
+  <div id="search-container">
+    <input type="text" id="search-box" placeholder="Tìm địa điểm...">
+    <button id="search-btn">Tìm</button>
+    <div id="results"></div>
+  </div>
+  <div id="map"></div>
+
+  <script>
+    // Map OSM
+    const map = L.map('map').setView([21.02, 105.85], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    const searchBox = document.getElementById("search-box");
+    const searchBtn = document.getElementById("search-btn");
+    const resultsDiv = document.getElementById("results");
+    let markers = [];
+    let searchTimeout = null;
+
+    // Hàm debounce để giới hạn số lần gọi API
+    function debounce(func, delay) {
+      return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => func.apply(context, args), delay);
+      };
+    }
+
+    async function doSearch() {
+      const query = searchBox.value.trim();
+      
+      // Xóa kết quả cũ nếu query rỗng
+      if (!query) {
+        resultsDiv.innerHTML = "";
+        return;
+      }
+
+      // Hiển thị trạng thái loading
+      resultsDiv.innerHTML = "<div class='loading'>Đang tìm kiếm...</div>";
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=vn&limit=5&addressdetails=1`;
+        const res = await fetch(url, { headers: { "Accept-Language": "vi" } });
+        const data = await res.json();
+
+        resultsDiv.innerHTML = "";
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+
+        if (data.length > 0) {
+          data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "result-item";
+            div.textContent = item.display_name;
+            div.addEventListener("click", () => {
+              const lat = parseFloat(item.lat);
+              const lon = parseFloat(item.lon);
+
+              map.setView([lat, lon], 15);
+              const marker = L.marker([lat, lon]).addTo(map);
+              markers.push(marker);
+              resultsDiv.innerHTML = ""; // Ẩn kết quả sau khi chọn
+            });
+            resultsDiv.appendChild(div);
+          });
+        } else {
+          resultsDiv.innerHTML = "<div>Không tìm thấy kết quả</div>";
+        }
+      } catch (err) {
+        console.error(err);
+        resultsDiv.innerHTML = "<div>Có lỗi xảy ra khi tìm kiếm</div>";
+      }
+    }
+
+    // Sự kiện nhập liệu với debounce
+    searchBox.addEventListener("input", debounce(doSearch, 300));
+    
+    // Vẫn giữ nút tìm kiếm cho người dùng thích
+    searchBtn.addEventListener("click", doSearch);
+
+    // Ẩn kết quả khi click ra ngoài
+    document.addEventListener("click", (e) => {
+      if (!searchContainer.contains(e.target)) {
+        resultsDiv.innerHTML = "";
+      }
+    });
+  </script>
+</body>
+</html>

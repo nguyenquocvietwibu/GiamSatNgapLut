@@ -24,8 +24,8 @@
   <script src="js/map.js"></script>
   <script type="module">
     const res = await fetch("/api/mapbox-token");
-    const data = await res.json(); // vì backend res.json({ token: "abc123" });
-    let bản_đồ = new BảnĐồ('pk.eyJ1Ijoibmd1eWVudmlldDIweHgiLCJhIjoiY21mNTVlNXR2MDIydjJqcHBqZXN4OTNyaCJ9.K7goCVrep9OsVEacfuPqtQ',
+    const data = await res.json();
+    let bản_đồ = new BảnĐồ(data.token,
       'bản-đồ', // ID của phần tử chứa bản đồ
       BảnĐồ.kiểu_bản_đồ_tiêu_chuẩn.mặc_định, // Kiểu bản đồ
       [105.8342, 21.0278], // Tọa độ trung tâm (Hà Nội)

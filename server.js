@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const đường_dẫn = require('path');
 const ứng_dụng = express();
-const cổng = 3000;
+const csdl_hợp_nhất = require('./database'); // kết nối PostgreSQL
 
 // Cấu hình EJS
 ứng_dụng.set('view engine', 'ejs');
@@ -23,6 +23,6 @@ const cổng = 3000;
   res.json({ token: process.env.MAPBOX_TOKEN });
 });
 
-ứng_dụng.listen(cổng, () => {
-  console.log(`Ứng dụng đang chạy tại http://localhost:${cổng}`);
+ứng_dụng.listen(process.env.SV_PORT, () => {
+  console.log(`Ứng dụng đang chạy tại http://localhost:${process.env.SV_PORT}`);
 });

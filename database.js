@@ -10,12 +10,25 @@ const pool = new Pool({
     port: process.env.PG_PORT,
 });
 
-// Kiểm tra kết nối
-pool.connect()
-    .then(client => {
-        console.log("✅ Kết nối PostgreSQL thành công!");
-        client.release();
+// Kiểm tra kết nối với database hiện tại
+pool.query("SELECT current_database() as csdl_hiện_tại;")
+    .then(kết_quả => {
+        console.log("Database được kết nối:", kết_quả.rows[0].csdl_hiện_tại);
     })
-    .catch(err => console.error("❌ Lỗi kết nối:", err.stack));
+    .catch(lỗi => {
+        console.lỗior("Lỗi khi lấy tên database:", lỗi);
+    });
 
+// Kiểm tra liệt kê bảng
+pool.query("SELECT tablename as tên_bảng from pg_tables where schemaname = 'public';")
+    .then(kết_quả => {
+        console.log("các bảng hiện có trong database: ")
+        kết_quả.rows.forEach(row => {
+            console.log(row.tên_bảng)
+        })
+
+    })
+    .catch(lỗi => {
+        console.lỗi("Lỗi khi lấy các bảng của database: ", lỗi)
+    });
 module.exports = pool;

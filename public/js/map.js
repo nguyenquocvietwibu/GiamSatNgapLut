@@ -8,8 +8,6 @@ class BảnĐồ {
         vệ_tinh: "standard-satellite",
         đường_phố: "streets-v11"
     }
-
-    static const = mapboxgl.accessToken = 'pk.eyJ1Ijoibmd1eWVudmlldDIweHgiLCJhIjoiY21mNTVlNXR2MDIydjJqcHBqZXN4OTNyaCJ9.K7goCVrep9OsVEacfuPqtQ';
     #bản_đồ;
     /**
      * @param {string} bộ_chứa tên class hoặc id của html
@@ -62,7 +60,9 @@ class BảnĐồ {
 
         }
         else {
-            this.#bản_đồ.removeControl(bộ_vẽ);
+            if (this.#bản_đồ.hasControl?.(bộ_vẽ)) {
+                this.#bản_đồ.removeControl(bộ_vẽ);
+            }
         }
     }
 }

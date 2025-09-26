@@ -1,0 +1,62 @@
+body {
+    background-color: rgb(236, 233, 233);
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thông-báo-lỗi-đăng-nhập {
+    text-align: center;
+    color: rgb(208, 2, 2);
+}
+
+.mẫu-đăng-nhập {
+    background-color: whitesmoke;
+    width: 350px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 50px;
+}
+
+.mẫu-đăng-nhập h2 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.mẫu-đăng-nhập label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.mẫu-đăng-nhập input {
+    width: 100%;
+    border: 1px solid rgb(230, 230, 230);
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+.mẫu-đăng-nhập button {
+    border: none;
+    width: 100%;
+    background-color: rgb(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    /* hiệu ứng mượt */
+}
+
+.mẫu-đăng-nhập button:hover {
+    background-color: rgb(0, 0, 0, 1);
+}
+
+.mục-về-trang-chính {
+    text-align: center;
+}
+
+.mục-về-trang-chính a:hover {
+    text-decoration: underline;
+}
+

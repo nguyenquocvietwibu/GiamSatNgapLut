@@ -1,0 +1,15 @@
+.vật-bo-góc-nhỏ {
+    border-radius: 4px;
+}
+
+.vật-bo-góc-vừa {
+    border-radius: 8px;
+}
+
+.vật-bo-góc-lớn {
+    border-radius: 16px;
+}
+
+.vật-ẩn {
+    display: none;
+}

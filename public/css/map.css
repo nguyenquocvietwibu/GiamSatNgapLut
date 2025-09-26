@@ -1,4 +1,0 @@
- #bản-đồ {
-    flex: 1;
-    width: 100% !important /* !important sẽ được áp dụng lên các thuộc tính hiện tại mà nó được gắn, nếu 2 thuộc tính đều có important thì cái important cuối cùng sẽ được áp dụng */
- }

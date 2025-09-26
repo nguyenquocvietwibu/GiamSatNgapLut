@@ -9,8 +9,6 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.js"></script>
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.5.0/mapbox-gl-draw.css" type="text/css" />
-  <link rel="stylesheet" href="css/map.css">
-
   <style>
     #bản-đồ {
       height: 100vh;
@@ -21,11 +19,9 @@
 
 <body>
   <div id="bản-đồ"></div>
-  <script src="js/map.js"></script>
   <script type="module">
-    const res = await fetch("/api/mapbox-token");
-    const data = await res.json();
-    let bản_đồ = new BảnĐồ(data.token,
+    const mapbox_token = await LấyMapboxToken();
+    let bản_đồ = new BảnĐồ(mapbox_token,
       'bản-đồ', // ID của phần tử chứa bản đồ
       BảnĐồ.kiểu_bản_đồ_tiêu_chuẩn.mặc_định, // Kiểu bản đồ
       [105.8342, 21.0278], // Tọa độ trung tâm (Hà Nội)

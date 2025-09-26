@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .menu-tài-khoản {
+      display: none;
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ccc;
+      top: 40px;
+      width: 120px;
+    }
+
+    .menu-tài-khoản.lật {
+      display: block;
+    }
+
+    .mục-con-menu-tài-khoản {
+      cursor: pointer;
+      text-align: center;
+      padding: 6px 8px;
+    }
+
+    .mục-con-menu-tài-khoản:hover {
+      background: #eee;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="thanh-điều-hướng bộ-chứa">
+
+
+    <% if (quyền_quản_trị) { %>
+    <div class="mục-tìm-không-gian-ngập chíp-danh-mục vật-bo-góc-nhỏ">Tìm không gian ngập</div>
+    <% }else { %>
+    <div class="mục-tìm-đường chíp-danh-mục vật-bo-góc-nhỏ">Tìm đường</div>
+    <div class="mục-gửi-thông-tin-ngập chíp-danh-mục vật-bo-góc-nhỏ">Gửi thông tin ngập</div>
+    <% } %>
+    <% if (tên_người_dùng != "") { %>
+    <div class="mục-tên-người-dùng chíp-danh-mục vật-bo-góc-nhỏ" onclick="LậtMenuTàiKhoản()">
+      <%= tên_người_dùng %>
+      <div id="menu-tài-khoản" class="menu-tài-khoản">
+        <div class="mục-con-menu-tài-khoản">Sửa thông tin</div>
+        <div class="mục-con-menu-tài-khoản" onclick="window.location.href='/dang-xuat'">Đăng xuất</div>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="mục-đăng-nhập chíp-danh-mục vật-bo-góc-nhỏ" onclick="window.location.href = 'dang-nhap'">Đăng nhập</div>
+    <% } %>
+  </div>
+  <script>
+    function LậtMenuTàiKhoản() {
+      const menu_tài_khoản = document.getElementById("menu-tài-khoản");
+      menu_tài_khoản.classList.toggle("lật");
+    }
+
+    // Tùy chọn: click ra ngoài menu thì ẩn
+    document.addEventListener('click', function(event) {
+      const menu_tài_khoản = document.getElementById("menu-tài-khoản");
+      const div_mục_tên_người_dùng = document.querySelector('.mục-tên-người-dùng');
+      if (!div_mục_tên_người_dùng.contains(event.target)) {
+        menu_tài_khoản.classList.remove('lật');
+      }
+    });
+  </script>
+</body>
+
+</html>

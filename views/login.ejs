@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng nhập</title>
+  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/everything.css">
+  <link rel="stylesheet" href="css/entity.css">
+
+</head>
+
+<body>
+  <div class="mẫu-đăng-nhập vật-bo-góc-vừa">
+    <% if (typeof lỗi !== "undefined") { %>
+    <div class="thông-báo-lỗi-đăng-nhập""><%= lỗi %></div>
+    <% } %>
+    <h2>Đăng nhập</h2>
+    <form method="POST" action="/dang-nhap">
+      <label for="tài-khoản">Tài khoản</label>
+      <input class="vật-bo-góc-nhỏ" type="text" id="tài-khoản" name="tài-khoản" placeholder="Nhập tài khoản" required>
+      <label for="mật-khẩu">Mật khẩu</label>
+      <input class="vật-bo-góc-nhỏ" type="password" id="mật-khẩu" name="mật-khẩu" placeholder="Nhập mật khẩu" required>
+      <button class="vật-bo-góc-nhỏ" type="submit">Đăng nhập</button>
+    </form>
+    <div class="mục-về-trang-chính">
+      <a href="/">Trở về trang chính</a>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+.thanh-điều-hướng {
+    height: 40px;
+    display: flex;
+    background-color: white;
+    justify-content: space-between;
+    z-index: 1000;
+    /* shadow giống mapbox */
+    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.2);
+    ;
+}
+
+.mục-tên-người-dùng {
+    position: relative;
+}

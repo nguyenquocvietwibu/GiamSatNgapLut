@@ -1,0 +1,14 @@
+.nút {
+    border: none;
+    width: 100%;
+    background-color: rgb(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.nút:hover {
+    background-color: rgb(0, 0, 0, 1);
+}

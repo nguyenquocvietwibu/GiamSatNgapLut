@@ -1,3 +1,66 @@
-/* .nội-dung-chính {
-    color: red;
-} */
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.mẫu-đăng-nhập {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.mẫu-đăng-nhập h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.mẫu-đăng-nhập label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.mẫu-đăng-nhập input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.mẫu-đăng-nhập button {
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.mẫu-đăng-nhập button:hover {
+    background: #0056b3;
+}
+
+.mục-về-trang-chính {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.mục-về-trang-chính a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.mục-về-trang-chính a:hover {
+    text-decoration: underline;
+}

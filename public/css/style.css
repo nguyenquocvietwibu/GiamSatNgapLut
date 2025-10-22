@@ -1,0 +1,280 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+button {
+  padding: 5px 10px;
+}
+
+
+a {
+  text-decoration: none;
+}
+
+li {
+  list-style-type: none;
+}
+
+.dark-on-hover:hover {
+  background-color: black !important;
+  color: white !important;
+}
+
+
+.dark-on-hover {
+  transition: all 0s ease-in-out 0s;
+
+  /* transition: property duration timing-function delay; */
+  /* Vị trí các tham số */
+  /* transition: all 0.3s ease-in-out 0.1s; */
+  /*              ↑   ↑       ↑        ↑     */
+
+  /* 
+ * CÁC GIÁ TRỊ TIMING-FUNCTION PHỔ BIẾN
+ * Hiệu ứng tốc độ thay đổi trong transition
+ */
+
+  /* 
+ * ease (MẶC ĐỊNH)
+ * Chậm đầu → nhanh dần → chậm cuối
+ * Hiệu ứng tự nhiên, mượt mà nhất
+ */
+
+  /* 
+ * ease-in
+ * Chậm đầu → nhanh dần ở cuối
+ * Dùng cho element xuất hiện (fade in)
+ */
+
+  /* 
+ * ease-out  
+ * Nhanh đầu → chậm dần ở cuối
+ * Dùng cho element biến mất (fade out)
+ */
+
+  /* 
+ * ease-in-out
+ * Chậm cả đầu và cuối, nhanh ở giữa
+ * Hiệu ứng êm ái, trang trọng
+ */
+
+  /* 
+ * linear
+ * Tốc độ đều đều từ đầu đến cuối
+ * Dùng cho loading, progress bar
+ */
+
+  /* 
+ * cubic-bezier(x1, y1, x2, y2)
+ * Custom hiệu ứng bằng tọa độ Bezier
+ * Tạo hiệu ứng đặc biệt như bounce, elastic
+ */
+  /* transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); */
+
+  /* 
+ * steps(n, start|end)
+ * Chuyển động theo từng bước nhảy
+ * Dùng cho hiệu ứng frame-by-frame
+ */
+  /* transition: all 0.3s steps(5, end); */
+}
+
+main {
+  height: 100vh;
+  width: 100vw;
+}
+
+#main-nav {
+  background-color: whitesmoke;
+}
+
+#main-content {
+  background-color: whitesmoke;
+}
+
+.main-nav-item {
+  padding: 0 10px;
+  overflow: hidden;
+}
+
+.container {
+  padding: 0 1rem;
+}
+
+.feature-content {
+  display: none;
+  border: solid 1px gainsboro;
+  box-shadow: 0 0px 6px rgba(0, 0, 0, 0.3);
+}
+
+
+
+#map-wrapper {
+  display: flex;
+  flex: 1 !important;
+  z-index: 0 !important;
+  position: relative;
+}
+
+#map {
+  flex: 1 !important;
+  z-index: 0 !important;
+  position: relative;
+}
+
+.flood-popup {
+  max-width: 250px;
+}
+
+.flood-popup h3 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.manage-table {
+  /* border-collapse: collapse; */
+  width: 100%;
+  display: block;
+  flex: 1;
+  /* để bảng có vùng cuộn riêng */
+  overflow-y: auto;
+}
+
+.manage-table thead {
+  position: sticky;
+  top: 0;
+  /* dính ở đầu bảng, không phải đầu trang */
+  background-color: whitesmoke;
+}
+
+
+#search-flood-in-table {
+  padding: 10px 10px;
+}
+
+#user-locator {
+  z-index: 1000;
+  top: 50px;
+  left: 10px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#toggle-flood-button {
+  z-index: 1000;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-details p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+
+.interact-flood-form input {
+  padding: 5px 10px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.interact-flood-form label {
+  margin-bottom: 2px;
+}
+
+.interact-flood-form select {
+  padding: 5px 10px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+
+
+.interact-flood-form {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  padding: 20px 50px;
+  border: solid 1px gainsboro;
+}
+
+.close-x-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 3;
+  margin-top: 5px;
+}
+
+.search-in-directions {
+  padding: 5px 10px;
+  width: 100%;
+  margin: 5px 0;
+}
+
+#search-address-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(173, 173, 241);
+  width: 100%;
+}
+
+.search-directions {
+  padding: 10px 5px;
+  border: 1px solid gainsboro;
+
+}
+
+/* Ẩn nút zoom controls trên mobile */
+@media (max-width: 768px) {
+  .leaflet-control-zoom {
+    display: none !important;
+  }
+
+
+  button {
+    padding: 2px 4px;
+  }
+
+  #main-content {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .feature-content {
+    height: 50%;
+    width: 100%;
+    max-width: 100% !important;
+  }
+
+}
+
+#directions-content {}
+
+/* CSS cho bảng chỉ đường */
+#directions-routes {}
+
+.leaflet-routing-container {}
+
+
+
+.leaflet-routing-alt {}
+
+.leaflet-routing-alternatives-container {}
+
+.leaflet-routing-collapse-btn {
+  /* display: none; */
+  /* Ẩn nút collapse nếu không cần */
+}

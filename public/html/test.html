@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bản đồ với Tìm Kiếm Địa Chỉ Việt Nam</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            z-index: 1000;
+        }
+        
+        .search-box {
+            display: flex;
+            background: white;
+            border-radius: 50px;
+            padding: 5px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .search-box:focus-within {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+        
+        #search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            outline: none;
+        }
+        
+        #search-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        #search-button:hover {
+            background: #45a049;
+        }
+        
+        #results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            margin-top: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1001;
+        }
+        
+        .result-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .result-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .result-details {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .map-container {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            height: 600px;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 10px;
+            color: #666;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .map-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bản đồ Việt Nam</h1>
+            <p class="subtitle">Tìm kiếm địa chỉ và khám phá các địa điểm trên khắp Việt Nam</p>
+        </header>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Nhập địa chỉ tại Việt Nam...">
+                <button id="search-button">Tìm kiếm</button>
+            </div>
+            <div id="results"></div>
+        </div>
+        
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Bản đồ Việt Nam | Sử dụng OpenStreetMap & Leaflet</p>
+        </footer>
+    </div>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+    
+    <script>
+        // Khởi tạo bản đồ
+        const map = L.map('map').setView([16.047079, 108.206230], 6); // Tọa độ trung tâm Việt Nam
+        
+        // Thêm tile layer từ OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Thêm marker mặc định
+        let marker = L.marker([16.047079, 108.206230]).addTo(map)
+            .bindPopup('Việt Nam')
+            .openPopup();
+        
+        // Biến để lưu trữ timeout cho tìm kiếm tự động
+        let searchTimeout;
+        
+        // Hàm tìm kiếm địa chỉ
+        async function searchAddress(query) {
+            const resultsContainer = document.getElementById('results');
+            
+            if (!query.trim()) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            resultsContainer.innerHTML = '<div class="loading">Đang tìm kiếm...</div>';
+            resultsContainer.style.display = 'block';
+            
+            try {
+                // Sử dụng Nominatim API của OpenStreetMap để tìm kiếm địa chỉ
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Vietnam')}&countrycodes=vn`
+                );
+                const data = await response.json();
+                
+                resultsContainer.innerHTML = '';
+                
+                if (data.length === 0) {
+                    resultsContainer.innerHTML = '<div class="result-item">Không tìm thấy kết quả phù hợp</div>';
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'result-name';
+                    nameDiv.textContent = item.display_name;
+                    
+                    const detailsDiv = document.createElement('div');
+                    detailsDiv.className = 'result-details';
+                    
+                    resultItem.appendChild(nameDiv);
+
+                    
+                    resultItem.onclick = () => {
+                        // Di chuyển bản đồ đến vị trí tìm thấy
+                        const lat = parseFloat(item.lat);
+                        const lon = parseFloat(item.lon);
+                        
+                        map.setView([lat, lon], 14);
+                        
+                        // Cập nhật marker
+                        map.removeLayer(marker);
+                        marker = L.marker([lat, lon]).addTo(map)
+                            .bindPopup(`<b>${item.display_name}</b>`)
+                            .openPopup();
+                        
+                        // Đóng kết quả tìm kiếm
+                        resultsContainer.style.display = 'none';
+                        document.getElementById('search-input').value = item.display_name;
+                    };
+                    
+                    resultsContainer.appendChild(resultItem);
+                });
+            } catch (error) {
+                console.error('Lỗi tìm kiếm:', error);
+                resultsContainer.innerHTML = '<div class="result-item">Có lỗi xảy ra khi tìm kiếm</div>';
+            }
+        }
+        
+        // Xử lý sự kiện khi nhập vào ô tìm kiếm (tìm kiếm tự động)
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            // Xóa timeout cũ nếu có
+            clearTimeout(searchTimeout);
+            
+            // Đặt timeout mới để tránh gọi API quá nhiều
+            searchTimeout = setTimeout(() => {
+                if (query.length >= 3) {
+                    searchAddress(query);
+                } else {
+                    document.getElementById('results').style.display = 'none';
+                }
+            }, 500);
+        });
+        
+        // Xử lý sự kiện khi nhấn nút tìm kiếm
+        document.getElementById('search-button').addEventListener('click', () => {
+            const query = document.getElementById('search-input').value.trim();
+            if (query) {
+                searchAddress(query);
+            }
+        });
+        
+        // Xử lý sự kiện khi nhấn Enter trong ô tìm kiếm
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = document.getElementById('search-input').value.trim();
+                if (query) {
+                    searchAddress(query);
+                }
+            }
+        });
+        
+        // Đóng kết quả tìm kiếm khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('results').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

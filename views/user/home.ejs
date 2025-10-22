@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/user/user.css">
+
+</head>
+
+<body>
+  <nav id="main-nav" class="container">
+    <ul id="main-nav-menu">
+      <li id="directions" class="main-nav-item dark-on-hover" onclick="toggleElement('directions-content', 'flex'), displayElementClassesExceptId('feature-content', 'directions-content')">
+        Tìm đường
+      </li>
+      <li id="send-flood-info" class="main-nav-item dark-on-hover" onclick="toggleElement('send-flood-info-content', 'flex'), displayElementClassesExceptId('feature-content', 'send-flood-info-content')">
+        Gửi thông tin ngập
+      </li>
+      <li id="login" class="main-nav-item dark-on-hover" onclick="window.location.href = 'login'">
+        Đăng nhập
+      </li>
+    </ul>
+  </nav>
+  <div id="main-content">
+    <div id="directions-content" class="feature-content">
+      <div class="search-directions">
+        <input type="search" name="" id="search-starting-point" class="search-in-directions" placeholder="Nhập điểm bắt đầu..." dispatch>
+        <input type="search" name="" id="search-destination-point" class="search-in-directions" placeholder="Nhập điểm đích...">
+      </div>
+      <div id="search-results" class="search-results-content"></div>
+      <div id="directions-routes"></div>
+    </div>
+    <div id="send-flood-info-content" class="feature-content">
+      <form id="send-flood-form" class="interact-flood-form" action="" method="post" enctype="multipart/form-data">
+        <button type="button" id="close-send-flood-button" class="dark-on-hover close-x-button" onclick="displayElement('send-flood-info-content', 'none'),  dispatchClearEditGeoFeatureEvent()">X</button>
+        <h2>Gửi thông tin nơi ngập</h2>
+
+        <label for="sender-name">Tên của bạn:</label>
+        <input type="text" id="sender-name" name="senderName" placeholder="Nhập tên của bạn" required>
+
+        <label for="sender-phone-number">Sđt của bạn:</label>
+        <input type="text" id="sender-phone-number" name="senderPhoneNumber" placeholder="Nhập số điện thoại" required>
+
+        <label for="flood-name">Tên nơi ngập:</label>
+        <input type="text" id="flood-name" name="floodName" placeholder="Nhập tên nơi ngập" required>
+
+        <label for="flood-depth">Mực nước ngập (m):</label>
+        <input type="number" id="flood-depth" name="floodDepth" step="0.1" min="0" placeholder="0.0" required>
+
+        <label for="send-flood-type">Loại không gian:</label>
+        <select id="send-flood-type-selecter" onchange="window.dispatchEvent(new CustomEvent('form_selected_flood_type', { detail: { selectedType: this.value } }))" name="floodType" required>
+          <option value="">-- Chọn loại không gian --</option>
+          <option value="điểm">Điểm</option>
+          <option value="đường">Đường</option>
+          <option value="vùng">Vùng</option>
+        </select>
+
+        <label for="flood-geometry">Geometry:</label>
+        <input id="send-flood-geometry" name="floodGeometry" type="text" readonly placeholder="Geojson">
+
+        <!-- Thêm phần upload ảnh -->
+        <label for="flood-images">Hình ảnh ngập lụt:</label>
+        <input type="file" id="flood-images" name="floodImages" multiple accept="image/*" capture="environment" required>
+        <small>Có thể chọn nhiều ảnh cùng lúc</small>
+        <div id="image-preview" style="margin-top: 10px;"></div>
+
+        <button id="confirm-send-flood-button" type="button" class="dark-on-hover">Xác nhận thêm</button>
+      </form>
+    </div>
+    <div id="map">
+      <button type="button" id="user-locator" class="dark-on-hover button-on-map"><i class="fas fa-location"></i></button>
+      <button type="button" id="toggle-flood-button" class="dark-on-hover button-on-map">
+        Hiển thị ngập:&nbsp
+        <input type="checkbox" id="toggle-flood-checkbox" checked>
+      </button>
+    </div>
+  </div>
+  <script type="module" src="js/leaflet_map_controller.js"></script>
+</body>
+<script src="js/user_report_flood_controller.js" type="module"></script>
+<script src="js/user_search_directions_controller.js" type="module"></script>
+
+</html>

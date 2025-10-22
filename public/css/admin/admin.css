@@ -1,0 +1,111 @@
+main {
+    display: flex;
+    position: relative;
+}
+
+#main-nav {
+    box-shadow: 0 0px 6px rgba(0, 0, 0, 0.3);
+    border: solid 1px gainsboro;
+    max-width: 200px;
+    resize: horizontal;
+    scrollbar-gutter: stable;
+    overflow-y: auto;
+}
+
+/* #main-nav-menu {
+
+} */
+
+.main-nav-item {
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+#main-content {
+    flex: 1;
+    display: flex;
+    position: relative;
+
+}
+
+.feature-content {
+    resize: horizontal;
+    max-width: 50%;
+    scrollbar-gutter: stable;
+    overflow-y: auto;
+    display: none;
+    display: flex;
+    flex-direction: column;
+    display: none;
+    align-items: flex-start;
+}
+
+
+#user-name-menu {
+    display: none;
+    border: 1px solid gainsboro;
+}
+
+.user-name-item {
+    border: 1px solid gainsboro;
+    padding: 2px 4px;
+}
+
+.search-in-table {
+    padding: 5px 10px;
+    width: 100%;
+}
+
+
+#add-flood-form {
+    display: none;
+}
+
+
+
+#edit-flood-form {
+    display: none;
+}
+
+
+
+.close-x-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 3;
+    margin-top: 5px;
+}
+
+/* .flood-table {
+    border-collapse: collapse;
+} */
+
+#flood-table td:nth-child(1),
+#flood-table td:nth-child(3),
+#flood-table td:nth-child(4),
+#flood-table td:nth-child(5) {
+    text-align: center;
+}
+
+#user-report-flood-table td:nth-child(1),
+#user-report-flood-table td:nth-child(3),
+#user-report-flood-table td:nth-child(4),
+#user-report-flood-table td:nth-child(5),
+#user-report-flood-table td:nth-child(7),
+#user-report-flood-table td:nth-child(8) {
+    text-align: center;
+}
+
+/* CSS cho ảnh trong table */
+.user-report-flood-img {
+  width: auto;
+  max-height: 150px;
+}
+
+.user-report-flood-img-wrapper {
+    max-height: 100px;
+    min-height: 0px;
+    width: auto;
+    overflow-y: auto;
+}

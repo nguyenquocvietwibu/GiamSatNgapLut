@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+  <div id="login-wrapper">
+
+    <form id="login-form" action="/login" method="post" autocomplete="on">
+      <% if (typeof error_message !== "undefined") { %>
+      <div id="error-message"><%= error_message %></div>
+      <% } %>
+      <h2>Đăng nhập</h2>
+      <label for="account">Tài khoản:</label>
+      <input type="text" id="account" name="account" placeholder="Nhập tài khoản" required>
+      <label for="password">Mật khẩu</label>
+      <input type="password" name="password" id="password" placeholder="Nhập mật khẩu..." required>
+      <button type="submit" class="dark-on-hover">Đăng nhập</button>
+      <a href="/">Trở về trang chủ</a>
+    </form>
+  </div>
+
+</body>
+
+</html>

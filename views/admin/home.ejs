@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/admin/admin.css">
+  
+</head>
+
+<body>
+  <% if (user_name == "") { %>
+  <script>
+    window.location.href = '/login';
+  </script>
+  <% } %>
+  <nav id="main-nav" class="container">
+    <ul id="main-nav-menu">
+      <% if (user_name != "") { %>
+      <li id="user-name" class="main-nav-item dark-on-hover" onclick="toggleElement('user-name-menu')">
+        <%= user_name %>
+      </li>
+      <ul id="user-name-menu">
+        <li id="logout" class="user-name-item dark-on-hover" onclick="window.location.href = 'logout'"">Đăng xuất</li>
+        <li id=" test" class="user-name-item dark-on-hover">Test</li>
+      </ul>
+      <% } %>
+      <li id="flood-manage" class="main-nav-item dark-on-hover" onclick="toggleElement('flood-manage-content', 'flex'), displayElementClassesExceptId('feature-content', 'flood-manage-content'), dispatchClearEditGeoFeatureEvent()">
+        Quản lý ngập
+      </li>
+      <li id="user-report-flood" class="main-nav-item dark-on-hover" onclick="toggleElement('user-report-flood-content', 'flex'), displayElementClassesExceptId('feature-content', 'user-report-flood-content'), dispatchClearEditGeoFeatureEvent()">
+        Duyệt báo cáo ngập từ dân
+      </li>
+    </ul>
+  </nav>
+
+  <div id="main-content">
+    <div id="flood-manage-content" class="feature-content">
+      <input type="search" name="" id="search-flood-in-table" class="search-in-table" placeholder="Tìm ngập...">
+      <button type="button" id="add-flood-button" class="dark-on-hover" onclick="displayElement('add-flood-form', 'flex'), displayElement('add-flood-button', 'none'), dispatchClearEditGeoFeatureEvent()">Thêm nơi ngập</button>
+      <form id="add-flood-form" class="interact-flood-form" action="" method="post">
+        <button type="button" id="close-add-flood-button" class="dark-on-hover close-x-button" onclick="displayElement('add-flood-form', 'none'); displayElement('add-flood-button', 'block'),  dispatchClearEditGeoFeatureEvent()">X</button>
+        <h2>Thêm nơi ngập</h2>
+        <label for="flood-name">Tên nơi ngập:</label>
+        <input type="text" id="add-flood-name" name="floodName" placeholder="Nhập tên nơi ngập" required>
+
+        <label for="flood-depth">Mực nước ngập (m):</label>
+        <input type="number" id="add-flood-depth" name="floodDepth" step="0.1" min="0" placeholder="0.0" required>
+
+        <label for="add-flood-type">Loại không gian:</label>
+        <select id="add-flood-type-selecter" name="floodType" required>
+          <option value="">-- Chọn loại không gian --</option>
+          <option value="điểm">Điểm</option>
+          <option value="đường">Đường</option>
+          <option value="vùng">Vùng</option>
+        </select>
+        <label for="flood-geometry">Geometry:</label>
+        <input id="add-flood-geometry" name="floodGeometry" type="text" readonly placeholder="Geojson">
+        <button id="confirm-add-flood-button" type="button" class="dark-on-hover">Xác nhận thêm</button>
+      </form>
+
+      <form id="edit-flood-form" class="interact-flood-form" action="" method="post">
+        <button type="button" id="close-edit-flood-button" class="dark-on-hover close-x-button" onclick="displayElement('edit-flood-form', 'none'), displayElement('add-flood-button'), dispatchClearEditGeoFeatureEvent()">X</button>
+        <h2>Sửa nơi ngập</h2>
+
+        <label for="flood-id">Mã:</label>
+        <input type="text" id="edit-flood-id" name="floodId" readonly>
+
+        <label for="flood-name">Tên nơi ngập:</label>
+        <input type="text" id="edit-flood-name" name="floodName" placeholder="Nhập tên nơi ngập" required>
+
+        <label for="flood-depth">Mực nước ngập (m):</label>
+        <input type="number" id="edit-flood-depth" name="floodDepth" step="0.1" min="0" placeholder="0.0" required>
+
+        <label for="edit-flood-type">Loại không gian:</label>
+        <select id="edit-flood-type-selecter" name="floodType" required>
+          <option value="">-- Chọn loại không gian --</option>
+          <option value="điểm">Điểm</option>
+          <option value="đường">Đường</option>
+          <option value="vùng">Vùng</option>
+        </select>
+
+        <label for="flood-geometry">Geometry:</label>
+        <input id="edit-flood-geometry" name="floodGeometry" type="text" readonly placeholder="Geojson">
+
+        <!-- ĐỔI THÀNH type="button" -->
+        <button id="confirm-edit-flood-button" type="button" class="dark-on-hover">Xác nhận sửa</button>
+      </form>
+
+      <table id="flood-table" class="manage-table" border="1">
+        <caption></caption>
+        <thead>
+          <tr>
+            <th colspan="10">Danh sách nơi ngập</th>
+          <tr>
+            <th>Mã</th>
+            <th>Tên</th>
+             <th>Mực nước ngập (m)</th>
+            <th>Loại không gian</th>
+            <th>Hành động</th>
+          </tr>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+
+        <tfoot>
+          <!-- <tr>
+            </tr> -->
+        </tfoot>
+      </table>
+    </div>
+    <div id="user-report-flood-content" class="feature-content">
+      <input type="search" name="" id="search-user-flood-report-in-table" class="search-in-table" placeholder="Tìm báo cáo ngập...">
+      <table id="user-report-flood-table" border="1" class="manage-table">
+        <caption></caption>
+        <thead>
+          <tr>
+            <th colspan="10">Danh sách báo cáo ngập từ dân</th>
+          </tr>
+          <tr>
+            <th>Mã</th>
+            <th>Tên nơi ngập</th>
+            <th>Mực nước ngập</th>
+            <th>Loại không gian</th>
+            <th>Hình ảnh</th>
+            <th>Tên người gửi</th>
+            <th>Số điện thoại người gửi</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+
+        <tfoot>
+          <!-- <tr>
+            </tr> -->
+        </tfoot>
+      </table>
+    </div>
+    <div id="map-wrapper">
+      <button type="button" id="toggle-flood-button" class="dark-on-hover">
+        Hiển thị ngập:&nbsp
+        <input type="checkbox" id="toggle-flood-checkbox" checked>
+      </button>
+      <div id="map"></div>
+    </div>
+
+
+  </div>
+</body>
+<script src="js/flood_manager_controller.js" type="module"></script>
+<script src="js/user_report_flood_manager_controller.js" type="module"></script>
+<script type="module" src="js/leaflet_map_controller.js"></script>
+
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Bản đồ chỉ đường tránh ngập - Hà Nội</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .controls { position: absolute; top: 10px; left: 10px; z-index: 1; background: white; padding: 10px; border-radius: 5px; }
+        input { margin: 5px; width: 200px; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div id='map'></div>
+    <div class='controls'>
+        <input id='start' type='text' placeholder='Điểm xuất phát (VD: 21.0285,105.8412)' value='21.0285,105.8412'>
+        <input id='end' type='text' placeholder='Điểm đến (VD: 21.038,105.850)' value='21.038,105.850'>
+        <button onclick='getRoute()'>Tìm đường tránh ngập</button>
+    </div>
+
+    <script>
+        mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Thay bằng token của bạn
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [105.8412, 21.0285], // Hà Nội
+            zoom: 12
+        });
+
+        let routeLayer = null; // Layer cho tuyến đường
+
+        // Load dữ liệu ngập lụt (giả định file local hoặc URL)
+        map.on('load', () => {
+            map.addSource('flood-areas', {
+                type: 'geojson',
+                data: './flood-areas.geojson' // Thay bằng đường dẫn file GeoJSON của bạn
+            });
+            map.addLayer({
+                id: 'flood-fill',
+                type: 'fill',
+                source: 'flood-areas',
+                paint: {
+                    'fill-color': '#ff0000',
+                    'fill-opacity': 0.5
+                }
+            });
+            map.addLayer({
+                id: 'flood-outline',
+                type: 'line',
+                source: 'flood-areas',
+                paint: {
+                    'line-color': '#ff0000',
+                    'line-width': 2
+                }
+            });
+        });
+
+        async function getRoute() {
+            const start = document.getElementById('start').value.split(',').map(Number);
+            const end = document.getElementById('end').value.split(',').map(Number);
+
+            // Tính tuyến đường cơ bản
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[1]},${start[0]};${end[1]},${end[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}&exclude=ferry`; // Tránh phà nếu cần
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.routes.length > 0) {
+                const route = data.routes[0].geometry;
+
+                // Kiểm tra giao với vùng ngập bằng Turf.js
+                const routeLine = turf.lineString(turf.getCoords(route));
+                map.querySourceFeatures('flood-areas').forEach(feature => {
+                    const floodPoly = feature.geometry;
+                    if (turf.intersect(routeLine, floodPoly)) {
+                        // Nếu giao, thêm waypoint tránh (ví dụ: lệch 0.01 độ)
+                        const avoidPoint = [start[0] + 0.01, start[1]]; // Điểm tránh tạm thời
+                        // Tái tính đường với waypoint: start -> avoid -> end
+                        getRouteWithAvoid(start, avoidPoint, end);
+                        alert('Tuyến đường gốc bị ngập! Đang tìm đường thay thế.');
+                        return;
+                    }
+                });
+
+                // Vẽ tuyến đường nếu không ngập
+                if (routeLayer) map.removeLayer(routeLayer);
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            geometry: route
+                        }
+                    },
+                    paint: {
+                        'line-color': '#007cbf',
+                        'line-width': 4
+                    }
+                });
+                routeLayer = 'route';
+            }
+        }
+
+        // Hàm tái tính với waypoint tránh
+        async function getRouteWithAvoid(start, avoid, end) {
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[1]},${start[0]};${avoid[1]},${avoid[0]};${end[1]},${end[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.routes.length > 0) {
+                const route = data.routes[0].geometry;
+                if (routeLayer) map.removeLayer(routeLayer);
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            geometry: route
+                        }
+                    },
+                    paint: {
+                        'line-color': '#00ff00', // Xanh cho đường thay thế
+                        'line-width': 4
+                    }
+                });
+                routeLayer = 'route';
+            }
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Bản đồ chỉ đường tránh ngập - Hà Nội</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .controls { position: absolute; top: 10px; left: 10px; z-index: 1; background: white; padding: 10px; border-radius: 5px; }
+        input { margin: 5px; width: 200px; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div id='map'></div>
+    <div class='controls'>
+        <input id='start' type='text' placeholder='Điểm xuất phát (VD: 21.0285,105.8412)' value='21.0285,105.8412'>
+        <input id='end' type='text' placeholder='Điểm đến (VD: 21.038,105.850)' value='21.038,105.850'>
+        <button onclick='getRoute()'>Tìm đường tránh ngập</button>
+    </div>
+
+    <script>
+        mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN'; // Thay bằng token của bạn
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [105.8412, 21.0285], // Hà Nội
+            zoom: 12
+        });
+
+        let routeLayer = null; // Layer cho tuyến đường
+
+        // Load dữ liệu ngập lụt (giả định file local hoặc URL)
+        map.on('load', () => {
+            map.addSource('flood-areas', {
+                type: 'geojson',
+                data: './flood-areas.geojson' // Thay bằng đường dẫn file GeoJSON của bạn
+            });
+            map.addLayer({
+                id: 'flood-fill',
+                type: 'fill',
+                source: 'flood-areas',
+                paint: {
+                    'fill-color': '#ff0000',
+                    'fill-opacity': 0.5
+                }
+            });
+            map.addLayer({
+                id: 'flood-outline',
+                type: 'line',
+                source: 'flood-areas',
+                paint: {
+                    'line-color': '#ff0000',
+                    'line-width': 2
+                }
+            });
+        });
+
+        async function getRoute() {
+            const start = document.getElementById('start').value.split(',').map(Number);
+            const end = document.getElementById('end').value.split(',').map(Number);
+
+            // Tính tuyến đường cơ bản
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[1]},${start[0]};${end[1]},${end[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}&exclude=ferry`; // Tránh phà nếu cần
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.routes.length > 0) {
+                const route = data.routes[0].geometry;
+
+                // Kiểm tra giao với vùng ngập bằng Turf.js
+                const routeLine = turf.lineString(turf.getCoords(route));
+                map.querySourceFeatures('flood-areas').forEach(feature => {
+                    const floodPoly = feature.geometry;
+                    if (turf.intersect(routeLine, floodPoly)) {
+                        // Nếu giao, thêm waypoint tránh (ví dụ: lệch 0.01 độ)
+                        const avoidPoint = [start[0] + 0.01, start[1]]; // Điểm tránh tạm thời
+                        // Tái tính đường với waypoint: start -> avoid -> end
+                        getRouteWithAvoid(start, avoidPoint, end);
+                        alert('Tuyến đường gốc bị ngập! Đang tìm đường thay thế.');
+                        return;
+                    }
+                });
+
+                // Vẽ tuyến đường nếu không ngập
+                if (routeLayer) map.removeLayer(routeLayer);
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            geometry: route
+                        }
+                    },
+                    paint: {
+                        'line-color': '#007cbf',
+                        'line-width': 4
+                    }
+                });
+                routeLayer = 'route';
+            }
+        }
+
+        // Hàm tái tính với waypoint tránh
+        async function getRouteWithAvoid(start, avoid, end) {
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[1]},${start[0]};${avoid[1]},${avoid[0]};${end[1]},${end[0]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.routes.length > 0) {
+                const route = data.routes[0].geometry;
+                if (routeLayer) map.removeLayer(routeLayer);
+                map.addLayer({
+                    id: 'route',
+                    type: 'line',
+                    source: {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            geometry: route
+                        }
+                    },
+                    paint: {
+                        'line-color': '#00ff00', // Xanh cho đường thay thế
+                        'line-width': 4
+                    }
+                });
+                routeLayer = 'route';
+            }
+        }
+    </script>
+</body>
+</html>

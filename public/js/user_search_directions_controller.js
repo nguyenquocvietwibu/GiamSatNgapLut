@@ -7,7 +7,41 @@ let searchMarker;
 let startingPoint;
 let destinationPoint;
 
-console.log(await cachedNoiNgap);
+// Biến điều khiển chỉ đường toàn cục
+window.routingControl = null;
+window.routeInfoPopup = null;
+
+// Định nghĩa hàm removeWaypoint trong global scope
+window.removeWaypoint = function(index) {
+    if (window.routingControl) {
+        // Lấy waypoints hiện tại
+        const currentWaypoints = window.routingControl.getWaypoints();
+        
+        // Không cho xóa điểm đầu và cuối
+        if (index === 0 || index === currentWaypoints.length - 1) {
+            alert('Không thể xóa điểm bắt đầu và điểm kết thúc!');
+            return;
+        }
+        
+        // Xóa waypoint tại index
+        currentWaypoints.splice(index, 1);
+        
+        // Cập nhật routing control với waypoints mới
+        window.routingControl.setWaypoints(currentWaypoints);
+        
+        console.log(`🗑️ Đã xóa waypoint tại index ${index}`);
+    }
+};
+
+// Hàm cập nhật vị trí waypoint
+window.updateWaypointPosition = function(index, newLatLng) {
+    if (window.routingControl) {
+        const waypoints = window.routingControl.getWaypoints();
+        waypoints[index].latLng = newLatLng;
+        window.routingControl.setWaypoints(waypoints);
+    }
+};
+
 setUpSearchInput('search-starting-point');
 setUpSearchInput('search-destination-point');
 
@@ -64,7 +98,7 @@ function addDefaultItems(resultsContainer, searchInputID) {
     resultsContainer.appendChild(mapSelectionItem);
 }
 
-// Hàm bật chế độ chọn trên bản đồ (ĐÃ THÊM NÚT THOÁT)
+// Hàm bật chế độ chọn trên bản đồ
 function enableMapSelection(searchInputID) {
     // Tạm thời thay đổi cursor để người dùng biết đang ở chế độ chọn
     map.getContainer().style.cursor = 'crosshair';
@@ -118,7 +152,7 @@ function createExitSelectionButton() {
     exitButton.textContent = '✕ Thoát chọn điểm';
     exitButton.id = 'exit-selection-button';
     exitButton.style.position = 'absolute';
-    exitButton.style.top = '130px'; // Đặt dưới nút "Xóa đường đi"
+    exitButton.style.top = '130px';
     exitButton.style.left = '10px';
     exitButton.style.zIndex = '1000';
     exitButton.style.backgroundColor = '#dc2626';
@@ -146,7 +180,7 @@ function removeExitSelectionButton() {
     }
 }
 
-// Hàm tắt chế độ chọn trên bản đồ (ĐÃ CẬP NHẬT)
+// Hàm tắt chế độ chọn trên bản đồ
 function disableMapSelection() {
     // Khôi phục cursor
     map.getContainer().style.cursor = '';
@@ -180,134 +214,70 @@ function updatePoint(type, value, coordinates = null) {
         console.log('  - Điểm đích:', destinationPoint);
         console.log('---');
 
-        // Tự động tìm đường khi có đủ 2 điểm (TRÁNH KHU VỰC NGẬP)
-        calculateRouteAvoidFlooded(
+        // Tự động tìm đường khi có đủ 2 điểm
+        calculateRoute(
             [startingPoint.coordinates.lat, startingPoint.coordinates.lng],
             [destinationPoint.coordinates.lat, destinationPoint.coordinates.lng]
         );
     }
 }
 
-// Hàm kiểm tra điểm có nằm trong khu vực ngập không
-function isPointInFloodedArea(point, floodedAreas) {
-    if (!floodedAreas || !floodedAreas.features) return false;
+// Hàm tạo custom marker với popup xóa waypoint
+function createWaypointMarker(i, waypoint, n) {
+    // Tạo marker mặc định
+    const marker = L.marker(waypoint.latLng, {
+        draggable: true,
+        autoPan: true
+    });
 
-    for (const area of floodedAreas.features) {
-        if (isPointInArea(point, area)) {
-            return true;
-        }
+    // Tạo popup với nút xóa
+    const popupContent = document.createElement('div');
+    popupContent.style.padding = '10px';
+    popupContent.style.textAlign = 'center';
+    popupContent.style.minWidth = '150px';
+    
+    let pointName = '';
+    if (i === 0) {
+        pointName = 'Điểm bắt đầu (A)';
+    } else if (i === n - 1) {
+        pointName = 'Điểm kết thúc (B)';
+    } else {
+        pointName = `Điểm dừng ${i}`;
     }
-    return false;
+    
+    popupContent.innerHTML = `
+        <div style="margin-bottom: 10px; font-weight: bold; color: #333;">
+            ${pointName}
+        </div>
+        <div style="margin-bottom: 8px; font-size: 12px; color: #666;">
+            ${waypoint.latLng.lat.toFixed(6)}, ${waypoint.latLng.lng.toFixed(6)}
+        </div>
+        <button onclick="window.removeWaypoint(${i})" 
+                style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; width: 100%;">
+            🗑️ Xóa điểm này
+        </button>
+    `;
+
+    marker.bindPopup(popupContent, {
+        closeButton: true,
+        autoClose: false,
+        closeOnEscapeKey: true
+    });
+
+    // Sự kiện khi kéo marker
+    marker.on('dragend', function(e) {
+        const newLatLng = marker.getLatLng();
+        console.log(`📍 Waypoint ${i} được kéo đến:`, newLatLng);
+        
+        // Cập nhật waypoint trong routing control
+        window.updateWaypointPosition(i, newLatLng);
+    });
+
+    return marker;
 }
 
-// Hàm kiểm tra điểm có trong khu vực không
-function isPointInArea(point, area) {
-    const bounds = getAreaBounds(area);
-    if (!bounds) return false;
-
-    return bounds.contains([point[0], point[1]]);
-}
-
-// Hàm lấy bounds của khu vực ngập
-function getAreaBounds(area) {
-    if (area.geometry.type === 'Point') {
-        const coords = area.geometry.coordinates;
-        return L.latLngBounds([
-            [coords[1] - 0.001, coords[0] - 0.001],
-            [coords[1] + 0.001, coords[0] + 0.001]
-        ]);
-    } else if (area.geometry.type === 'LineString') {
-        const coords = area.geometry.coordinates;
-        const points = coords.map(coord => [coord[1], coord[0]]);
-        return L.latLngBounds(points);
-    } else if (area.geometry.type === 'Polygon') {
-        const coords = area.geometry.coordinates[0];
-        const points = coords.map(coord => [coord[1], coord[0]]);
-        return L.latLngBounds(points);
-    }
-    return null;
-}
-
-// Hàm tìm điểm thay thế an toàn gần điểm gốc
-function findSafeAlternativePoint(originalPoint, floodedAreas, maxAttempts = 15) {
-    let attempts = 0;
-    const baseDistance = 0.002; // ~200m
-
-    while (attempts < maxAttempts) {
-        // Tạo điểm ngẫu nhiên theo hình xoắn ốc
-        const distance = baseDistance * (attempts + 1);
-        const angle = attempts * (Math.PI / 6); // 30 độ mỗi bước
-
-        const newLat = originalPoint[0] + Math.sin(angle) * distance;
-        const newLng = originalPoint[1] + Math.cos(angle) * distance;
-        const newPoint = [newLat, newLng];
-
-        if (!isPointInFloodedArea(newPoint, floodedAreas)) {
-            console.log(`✅ Tìm thấy điểm an toàn sau ${attempts + 1} lần thử`);
-            return newPoint;
-        }
-
-        attempts++;
-    }
-
-    console.log('⚠️ Không tìm thấy điểm an toàn, sử dụng điểm gốc');
-    return originalPoint;
-}
-
-// Hàm tìm các khu vực ngập nằm giữa 2 điểm
-function findFloodedAreasBetweenPoints(start, end, floodedAreas) {
-    const affectedAreas = [];
-    const routeBounds = L.latLngBounds([start, end]);
-
-    if (floodedAreas && floodedAreas.features) {
-        floodedAreas.features.forEach(area => {
-            const areaBounds = getAreaBounds(area);
-            if (areaBounds && routeBounds.intersects(areaBounds)) {
-                affectedAreas.push(area);
-            }
-        });
-    }
-
-    console.log(`🔍 Tìm thấy ${affectedAreas.length} khu vực ngập trên tuyến đường`);
-    return affectedAreas;
-}
-
-// Hàm tạo các waypoint tránh khu vực ngập THÔNG MINH
-function createSmartAvoidanceWaypoints(start, end, floodedAreas) {
-    const waypoints = [L.latLng(start[0], start[1])];
-
-    // Tìm các khu vực ngập nằm giữa 2 điểm
-    const affectedAreas = findFloodedAreasBetweenPoints(start, end, floodedAreas);
-
-    if (affectedAreas.length > 0) {
-        // Tạo các điểm tránh xung quanh các khu vực ngập
-        affectedAreas.forEach((area, index) => {
-            const areaCenter = getAreaBounds(area).getCenter();
-            const safePoint = findSafeAlternativePoint([areaCenter.lat, areaCenter.lng], floodedAreas);
-
-            // Chỉ thêm điểm tránh nếu nó không quá gần điểm đầu/cuối
-            const distanceToStart = Math.sqrt(
-                Math.pow(safePoint[0] - start[0], 2) +
-                Math.pow(safePoint[1] - start[1], 2)
-            );
-            const distanceToEnd = Math.sqrt(
-                Math.pow(safePoint[0] - end[0], 2) +
-                Math.pow(safePoint[1] - end[1], 2)
-            );
-
-            if (distanceToStart > 0.001 && distanceToEnd > 0.001) {
-                waypoints.push(L.latLng(safePoint[0], safePoint[1]));
-                console.log(`🛡️ Thêm điểm tránh ngập ${index + 1}`);
-            }
-        });
-    }
-
-    waypoints.push(L.latLng(end[0], end[1]));
-    return waypoints;
-}
-
-// HÀM CHÍNH: Chỉ đường tránh khu vực ngập lụt (ĐÃ SỬA)
-function calculateRouteAvoidFlooded(startPosition, endPosition) {
+// HÀM CHÍNH: Chỉ đường với waypoints có thể kéo và xóa
+function calculateRoute(startPosition, endPosition) {
     
     // Xóa route cũ nếu có
     if (window.routingControl) {
@@ -315,42 +285,53 @@ function calculateRouteAvoidFlooded(startPosition, endPosition) {
         window.routingControl = null;
     }
 
-    console.log('🔄 Đang tính đường tránh khu vực ngập lụt...');
+    console.log('🔄 Đang tính đường ngắn nhất...');
 
-    // Tạo waypoints tránh khu vực ngập THÔNG MINH
-    const waypoints = createSmartAvoidanceWaypoints(startPosition, endPosition, cachedNoiNgap);
+    const waypoints = [
+        L.latLng(startPosition[0], startPosition[1]),
+        L.latLng(endPosition[0], endPosition[1])
+    ];
 
-    console.log('📍 Waypoints:', waypoints);
+    console.log('📍 Waypoints (điểm đầu/cuối):', waypoints);
 
-    // Tạo routing control
+    // Tạo routing control với custom marker function
     window.routingControl = L.Routing.control({
         waypoints: waypoints,
         router: L.Routing.osrmv1({
             serviceUrl: 'https://router.project-osrm.org/route/v1',
             profile: 'car',
-            language: 'vi'
+            language: 'vi',
+            serviceUrlParameters: {
+                alternatives: 5
+            }
         }),
-        createMarker: function (i, waypoint, n) {
-            return null;
-        },
         lineOptions: {
             styles: [
                 {
-                    color: '#10b981',
+                    color: '#075a79ff',
                     weight: 8,
-                    opacity: 0.9,
-                    dashArray: '0'
+                    opacity: 0.8
                 }
             ]
         },
         showAlternatives: true,
-        routeWhileDragging: false,
-        addWaypoints: false,
-        // KHÔNG dùng container option ở đây vì không hoạt động
-        // container: document.getElementById('directions-routes') // ❌ Không hoạt động
+        altLineOptions: {
+            styles: [
+                {
+                    color: '#0999ceff',
+                    weight: 6,
+                    opacity: 0.6
+                }
+            ]
+        },
+        routeWhileDragging: true,
+        addWaypoints: true,
+        draggableWaypoints: true,
+        createMarker: createWaypointMarker // Sử dụng custom marker function
+        
     }).addTo(map);
 
-    // QUAN TRỌNG: Di chuyển bảng chỉ đường vào container mong muốn SAU KHI tạo
+    // Di chuyển bảng chỉ đường vào container mong muốn SAU KHI tạo
     const directionsContainer = document.getElementById('directions-routes');
     const routingContainer = document.querySelector('.leaflet-routing-container');
     
@@ -369,16 +350,13 @@ function calculateRouteAvoidFlooded(startPosition, endPosition) {
     }
 
     // Fit bản đồ để hiển thị cả tuyến đường
-    const bounds = L.latLngBounds([
-        [startPosition[0], startPosition[1]],
-        [endPosition[0], endPosition[1]]
-    ]);
+    const bounds = L.latLngBounds([startPosition, endPosition]);
     map.fitBounds(bounds, { padding: [100, 100] });
 
     // Thêm sự kiện khi route được tính xong
     window.routingControl.on('routesfound', function (e) {
         const routes = e.routes;
-        console.log(`✅ Đã tìm thấy ${routes.length} tuyến đường tránh ngập`);
+        console.log(`✅ Đã tìm thấy ${routes.length} tuyến đường`);
 
         routes.forEach((route, index) => {
             console.log(`🛣️ Tuyến ${index + 1}: ${(route.summary.totalDistance / 1000).toFixed(2)} km, ${(route.summary.totalTime / 60).toFixed(2)} phút`);
@@ -386,12 +364,7 @@ function calculateRouteAvoidFlooded(startPosition, endPosition) {
 
         // Hiển thị thông tin chi tiết về tuyến đường được chọn
         if (routes[0]) {
-            const route = routes[0];
-            console.log(`📏 Khoảng cách: ${(route.summary.totalDistance / 1000).toFixed(2)} km`);
-            console.log(`⏱️ Thời gian: ${(route.summary.totalTime / 60).toFixed(2)} phút`);
-
-            // Hiển thị thông báo cho người dùng
-            showRouteInfo(route);
+            showRouteInfo(routes[0]);
         }
     });
 
@@ -410,49 +383,8 @@ function showRouteInfo(route) {
     if (window.routeInfoPopup) {
         window.routeInfoPopup.remove();
     }
-
-    window.routeInfoPopup = L.popup()
-        .setLatLng([route.coordinates[0].lat, route.coordinates[0].lng])
-        .setContent(`
-            <div style="font-weight: bold; color: #10b981;">
-                🛣️ TUYẾN ĐƯỜNG AN TOÀN
-            </div>
-            <div>📏 Quãng đường: ${distance} km</div>
-            <div>⏱️ Thời gian: ${time} phút</div>
-            <div>🛡️ Đã tránh các khu vực ngập lụt</div>
-        `)
-        .openOn(map);
-}
-
-// Hàm chỉ đường bình thường (dự phòng)
-function calculateRoute(startPosition, endPosition) {
-    if (window.routingControl) {
-        window.routingControl.remove();
-        window.routingControl = null;
-    }
-
-    window.routingControl = L.Routing.control({
-        waypoints: [
-            L.latLng(startPosition[0], startPosition[1]),
-            L.latLng(endPosition[0], endPosition[1])
-        ],
-        router: L.Routing.osrmv1({
-            serviceUrl: 'https://router.project-osrm.org/route/v1',
-            profile: 'car',
-            language: 'vi'
-        }),
-        createMarker: function () {
-            return null;
-        },
-        lineOptions: {
-            styles: [
-                { color: 'blue', weight: 6 }
-            ]
-        }
-    }).addTo(map);
-
-    const bounds = L.latLngBounds([startPosition, endPosition]);
-    map.fitBounds(bounds, { padding: [50, 50] });
+    
+    // Có thể thêm hiển thị thông tin route ở đây nếu cần
 }
 
 // Hàm xóa đường đi
@@ -486,6 +418,7 @@ function clearRoute() {
     }
 }
 
+// Các hàm còn lại giữ nguyên...
 async function searchAddress(query, searchInputID) {
     const resultsContainer = document.getElementById('search-results');
 
@@ -509,12 +442,10 @@ async function searchAddress(query, searchInputID) {
 
         if (data.length === 0) {
             resultsContainer.innerHTML = '<div class="search-result-item">Không tìm thấy kết quả phù hợp</div>';
-            // CHỈ KHI KHÔNG CÓ KẾT QUẢ mới thêm các item mặc định
             addDefaultItems(resultsContainer, searchInputID);
             return;
         }
 
-        // KHI CÓ KẾT QUẢ TÌM KIẾM - CHỈ HIỂN THỊ KẾT QUẢ, KHÔNG THÊM ITEM MẶC ĐỊNH
         data.forEach(item => {
             const resultItem = document.createElement('div');
             resultItem.className = 'search-result-item';
@@ -548,7 +479,6 @@ async function searchAddress(query, searchInputID) {
     } catch (error) {
         console.error('Lỗi tìm kiếm:', error);
         resultsContainer.innerHTML = '<div class="search-result-item">Có lỗi xảy ra khi tìm kiếm</div>';
-        // KHI CÓ LỖI - thêm các item mặc định
         addDefaultItems(resultsContainer, searchInputID);
     }
 }
@@ -595,7 +525,6 @@ document.addEventListener('click', (e) => {
     const resultsContainer = document.getElementById('search-results');
     if (!e.target.closest('.search-results-content') && !e.target.closest('.search-in-directions')) {
         resultsContainer.style.display = 'none';
-        // Xóa các item mặc định
         const userLocationItem = resultsContainer.querySelector('.user-location-item');
         const mapSelectionItem = resultsContainer.querySelector('.map-selection-item');
         if (userLocationItem) userLocationItem.remove();

@@ -304,6 +304,7 @@ function enableEditMode(geometryType, feature = null) {
             draggable: true,
         }).addTo(map);
         const firstLayer = editLayer.getLayers()[0];
+        dispatchDrawedGeometryEvent(firstLayer.toGeoJSON().geometry);
         console.log(firstLayer);
         // dispatchDrawedGeometryEvent(firstLayer.toGeoJSON().geometry);
         console.log('GeoJSON sau khi thêm mới:', firstLayer.toGeoJSON());
